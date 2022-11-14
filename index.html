@@ -1,0 +1,124 @@
+
+<html ng-app="app">
+    <head>
+        <script type="text/javascript">
+
+        const generationIds = {
+            All: {min: 1, max: 905},
+            gen1: {min: 1, max: 151},
+            gen2: {min: 152, max: 251},
+            gen3: {min: 252, max: 386},
+            gen4: {min: 387, max: 493},
+            gen5: {min: 494, max: 649},
+            gen6: {min: 650, max: 721},
+            gen7: {min: 722, max: 809},
+            gen8: {min: 810, max: 905},
+            // gen9: {min: 906, max: 925},
+        }
+
+        function randomIntFromInterval(min, max) {
+                return Math.floor(Math.random() * (max - min + 1) + min)
+        }
+
+        var myWebSocket;
+        connectToWS();
+        function connectToWS() {
+            let endpoint = "wss://confusion-woozy-ozraraptor.glitch.me/";
+            // var endpoint = document.getElementById("endpoint").value;
+            if (myWebSocket !== undefined) {
+                myWebSocket.close()
+            }
+    
+            myWebSocket = new WebSocket(endpoint);
+    
+            myWebSocket.onmessage = function(event) {
+                var leng;
+                if (event.data.size === undefined) {
+                    leng = event.data.length
+                } else {
+                    leng = event.data.size
+                }
+                console.log("onmessage. size: " + leng + ", content: " + event.data);
+                // console.log(Object.values(event.data));
+            }
+    
+            myWebSocket.onopen = function(evt) {
+                console.log("onopen.");
+            };
+    
+            myWebSocket.onclose = function(evt) {
+                console.log("onclose.");
+            };
+    
+            myWebSocket.onerror = function(evt) {
+                console.log("Error!");
+            };
+
+            setInterval(() => {
+                sendMsg(JSON.stringify({message: "keepalive"}));
+            }, 14400);
+        }
+    
+        function sendMsg(message) {
+            // var message = document.getElementById("myMessage").value;
+            myWebSocket.send(message);
+        }
+
+        function pickNew(){
+            var e = document.getElementById("gen_select");
+            // var value = e.value;
+            // var text = e.options[e.selectedIndex].text;
+            let genSelected = e.value;
+            console.log(genSelected);
+            let min = generationIds[genSelected].min;
+            let max = generationIds[genSelected].max;
+            let randomId = randomIntFromInterval(min, max);
+            let message = JSON.stringify({message: "pickNew", id: randomId});
+            myWebSocket.send(message);
+        }
+    
+        function closeConn() {
+            myWebSocket.close();
+        }
+    
+        </script>
+    </head>
+    <body>
+
+        <h4 id="gen_wrapper">
+            <label>Generation:</label>
+            <select id="gen_select">
+                <option value="All">All</option>
+                <option value="gen1">Gen 1</option>
+                <option value="gen2">Gen 2</option>
+                <option value="gen3">Gen 3</option>
+                <option value="gen4">Gen 4</option>
+                <option value="gen5">Gen 5</option>
+                <option value="gen6">Gen 6</option>
+                <option value="gen7">Gen 7</option>
+                <option value="gen8">Gen 8</option>
+                <!-- <option value="gen9">Gen 9</option> -->
+            </select>
+        </h4>
+
+        <input type="button" onclick="pickNew()" value="Pick a new Pokemon" />
+        <input type="button" onclick="sendMsg(JSON.stringify({message: 'revealType'}))" value="Reveal Type" />
+        <input type="button" onclick="sendMsg(JSON.stringify({message: 'revealPokemon'}))" value="Reveal the pokemon!" /><br><br>
+    
+        <!-- <form>
+            connection to: <input type="text" id="endpoint" name="endpoint" value="wss://confusion-woozy-ozraraptor.glitch.me/"  style="width: 200px" ><br>
+        </form> -->
+    
+        <!-- <input type="button" onclick="connectToWS()" value="connect to WebSocket endpoint" /><br><br> -->
+    
+        <!-- <form>
+            message: <input type="text" id="myMessage" name="myMessage" value="hi there!"><br>
+        </form> -->
+    
+        <!-- <input type="button" onclick="sendMsg()" value="Send message" /> -->
+    
+        <!-- <input type="button" onclick="closeConn()" value="Close connection" /> -->
+    
+    
+    </body>
+    </html>
