@@ -148,6 +148,7 @@
     
             myWebSocket.onclose = function(evt) {
                 console.log("onclose.");
+                connectToWS();
             };
     
             myWebSocket.onerror = function(evt) {
@@ -156,7 +157,7 @@
 
             setInterval(() => {
                 sendMsg(JSON.stringify({message: "keepalive"}));
-            }, 240000);
+            }, 180000);
         }
     
         function sendMsg(message) {
